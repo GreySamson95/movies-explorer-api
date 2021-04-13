@@ -1,12 +1,12 @@
 const mongoose = require('mongoose');
-const { isEmail } = require('validator');
+const { isEmail } = require('validator');// валидатор Email
 
 const userSchema = new mongoose.Schema({
   email: { // Email пользователя
     type: String,
     required: true,
     unique: true,
-    validate: [isEmail, { message: 'Email указан не верно.' }],
+    validate: [isEmail, { message: 'Введите корректный Email' }],
   },
   password: { // Хэш пароля пользователя
     type: String,
