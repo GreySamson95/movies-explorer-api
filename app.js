@@ -7,7 +7,7 @@ const cors = require('cors');
 const rateLimit = require('express-rate-limit');
 const cookieParser = require('cookie-parser');
 const mongoose = require('mongoose');
-const { errors } = require('celebrate');
+// const { errors } = require('celebrate');
 const { requestLogger, errorLogger } = require('./middlewares/logger');
 /* ----------------------------------- */
 
@@ -56,9 +56,9 @@ const corsOptions = {
 
 /* ----------- милдверы ------------ */
 app.use(cors(corsOptions)); // CORS
-app.use(cookieParser());
-app.use(limiter);
 app.use(helmet());
+app.use(limiter);
+app.use(cookieParser());
 app.use(bodyParser.urlencoded({
   extended: true,
 }));
@@ -73,19 +73,24 @@ app.use('/', mainRouter);
 /* --------------------------------- */
 
 /* - логгирование и обработка ошибок - */
-app.use(errors()); // JOI / Celebrate
-app.use((err, req, res, next) => {
-  console.log(err);
-  const { statusCode = 500, message } = err;
-  res
-    .status(statusCode)
-    .send({
-      message: statusCode === 500
-        ? 'На сервере произошла ошибка'
-        : message,
-    });
-  next();
-});
+const celebrateErrorHandler = require('./middlewares/celebrateErrorHandler');// кастом JOI / Celebrate
+const errorHandler = require('./middlewares/errorHandler');
+
+app.use(celebrateErrorHandler);
+app.use(errorHandler);
+// app.use(errors()); // JOI / Celebrate
+// app.use((err, req, res, next) => {
+//   console.log(err);
+//   const { statusCode = 500, message } = err;
+//   res
+//     .status(statusCode)
+//     .send({
+//       message: statusCode === 500
+//         ? 'На сервере произошла ошибка'
+//         : message,
+//     });
+//   next();
+// });
 app.use(errorLogger); // Логгер
 /* --------------------------------- */
 

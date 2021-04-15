@@ -12,7 +12,7 @@ module.exports = (req, res, next) => {
 
   // Ошибка, если нет authorization в headers / нет Bearer в начале
   if (!authorization || !authorization.startsWith('Bearer ')) {
-    throw new UnauthorizedError();
+    throw new UnauthorizedError('Необходима авторизация');
   }
 
   // Извлечём token
@@ -23,7 +23,7 @@ module.exports = (req, res, next) => {
   try {
     payload = jwt.verify(token, NODE_ENV === 'production' ? JWT_SECRET : 'secret');
   } catch (err) {
-    throw new UnauthorizedError();
+    throw new UnauthorizedError('Необходима авторизация');
   }
 
   req.user = payload; // записываем пейлоуд в объект запроса
