@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const { ObjectId } = require('mongodb');
 
 const regex = /^(https?:\/\/)?(w{3,}.)?([a-z0-9-]+\.)+([a-z]{2,})\/?([a-z0-9-._~:/?#[\]@!$&'()*+,;=]){0,}/i;
 // https://                            : ^(https?:\/\/)?
@@ -6,7 +7,6 @@ const regex = /^(https?:\/\/)?(w{3,}.)?([a-z0-9-]+\.)+([a-z]{2,})\/?([a-z0-9-._~
 // субдомен                            : ([a-z0-9\-]+\.)+
 // доменная зона                       : ([a-z]{2,})\/?
 // путь                                : ([a-z0-9-._~:\/?#\[\]@!$&'()*+,;=]){0,}
-const { ObjectId } = require('mongodb');
 
 const movieSchema = new mongoose.Schema({
   country: { // страна создания фильма
@@ -63,7 +63,11 @@ const movieSchema = new mongoose.Schema({
     type: ObjectId,
     ref: 'user',
     required: true,
-    select: false,
+  },
+  movieId: { // id фильма, который содержится в ответе сервиса MoviesExplorer
+    type: Number,
+    required: true,
+    unique: true,
   },
   nameRU: { // название фильма на русском языке
     type: String,

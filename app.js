@@ -1,68 +1,94 @@
-// require('dotenv').config();
+/* ----------- импорты --------------- */
 const express = require('express');
-const userRouter = require('./routes/userRouter');
-const movieRouter = require('./routes/movieRouter');
-// const bodyParser = require('body-parser');
-// const cors = require('cors');
-// const cookieParser = require('cookie-parser');
-// const mongoose = require('mongoose');
-// const { errors } = require('celebrate');
+require('dotenv').config();
+const helmet = require('helmet');
+const bodyParser = require('body-parser');
+const cors = require('cors');
+const rateLimit = require('express-rate-limit');
+const cookieParser = require('cookie-parser');
+const mongoose = require('mongoose');
+const { errors } = require('celebrate');
+const { requestLogger, errorLogger } = require('./middlewares/logger');
+/* ----------------------------------- */
 
-const { PORT = 3000 } = process.env;
+/* ------- порт и express ------------ */
+const {
+  PORT = 3000,
+  MONGO = 'mongodb://localhost:27017/movie-explorer',
+} = process.env;
 const app = express();
-// mongoose.connect('mongodb://localhost:27017/mestodb', {
-//   useNewUrlParser: true,
-//   useCreateIndex: true,
-//   useFindAndModify: false,
-//   useUnifiedTopology: true,
-// });
-// const allowedCors = [
-//   'https://.students.nomoredomains.icu',
-//   'https://.students.nomoredomains.icu',
-//   'http://.students.nomoredomains.icu',
-//   'http://localhost:3001',
-//   'http://localhost:3000',
-// ];
-// const corsOptions = {
-//   origin: allowedCors,
-//   optionsSuccessStatus: 204,
-//   methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE'],
-//   preflightContinue: false,
-//   allowedHeaders: ['Content-Type', 'origin', 'Authorization'],
-//   credentials: true,
-// };
+/* ----------------------------------- */
 
-// // Милдверы:
-// app.use(cors(corsOptions)); // CORS
-// app.use(bodyParser.urlencoded({ // Парсер
-//   extended: true,
-// }));
-// app.use(bodyParser.json()); // Парсер
-// app.use(requestLogger); // Логгер
-
-// Роутинг:
-// app.use('/', authRouter);
-app.use('/users', userRouter); // Роутинг пользователей
-app.use('/movies', movieRouter); // Роутинг карточек
-app.use('*', () => { // Роутинг 404
-  // throw new NotFoundError('Запрашиваемый ресурс не найден.');
+/* --------- rate limiter ------------ */
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // limit each IP to 100 requests per windowMs
 });
+/* ----------------------------------- */
 
-// Централизованная обработка ошибок:
+/* --------  база данных ------------- */
+mongoose.connect(MONGO, { // Подключение БазыДанных
+  useNewUrlParser: true,
+  useCreateIndex: true,
+  useFindAndModify: false,
+  useUnifiedTopology: true,
+});
+/* ----------------------------------- */
+
+/* ----------- Cors конфиг ----------- */
+const allowedCors = [
+  'https://api.greysamson.nomoredomains.club',
+  'https://greysamson.nomoredomains.club',
+  'http://api.greysamson.nomoredomains.club',
+  'http://greysamson.nomoredomains.club',
+  'http://localhost:3001',
+  'http://localhost:3000',
+];
+const corsOptions = {
+  origin: allowedCors,
+  optionsSuccessStatus: 204,
+  methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE'],
+  preflightContinue: false,
+  allowedHeaders: ['Content-Type', 'origin', 'Authorization'],
+  credentials: true,
+};
+/* --------------------------------- */
+
+/* ----------- милдверы ------------ */
+app.use(cors(corsOptions)); // CORS
+app.use(cookieParser());
+app.use(limiter);
+app.use(helmet());
+app.use(bodyParser.urlencoded({
+  extended: true,
+}));
+app.use(bodyParser.json());
+app.use(requestLogger); // Логгер
+/* --------------------------------- */
+
+/* ----------- роутинг ------------ */
+const mainRouter = require('./routes/index');
+
+app.use('/', mainRouter);
+/* --------------------------------- */
+
+/* - логгирование и обработка ошибок - */
+app.use(errors()); // JOI / Celebrate
 app.use((err, req, res, next) => {
+  console.log(err);
+  const { statusCode = 500, message } = err;
+  res
+    .status(statusCode)
+    .send({
+      message: statusCode === 500
+        ? 'На сервере произошла ошибка'
+        : message,
+    });
   next();
-  if (err.statusCode === undefined) {
-    const { statusCode = 500, message } = err;
-    return res
-      .status(statusCode)
-      .send({
-        message: statusCode === 500
-          ? 'На сервере произошла ошибка'
-          : message,
-      });
-  }
-  return res.status(err.statusCode).send({ message: err.message });
 });
+app.use(errorLogger); // Логгер
+/* --------------------------------- */
 
-// Run App:
+/* ----------- run app ------------ */
 app.listen(PORT);
+/* --------------------------------- */
