@@ -73,8 +73,8 @@ app.use('/', mainRouter);
 /* - логгирование и обработка ошибок - */
 
 // app.use(celebrateErrorHandler);
-app.use(errorHandler);
 app.use(errors()); // JOI / Celebrate
+app.use(errorHandler);
 // app.use((err, req, res, next) => {
 //   console.log(err);
 //   const { statusCode = 500, message } = err;

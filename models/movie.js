@@ -1,5 +1,4 @@
 const mongoose = require('mongoose');
-const { ObjectId } = require('mongodb');
 
 const regex = /^(https?:\/\/)?(w{3,}.)?([a-z0-9-]+\.)+([a-z]{2,})\/?([a-z0-9-._~:/?#[\]@!$&'()*+,;=]){0,}/i;
 // https://                            : ^(https?:\/\/)?
@@ -60,14 +59,14 @@ const movieSchema = new mongoose.Schema({
     },
   },
   owner: { // _id пользователя, который сохранил статью
-    type: ObjectId,
+    type: mongoose.Schema.Types.ObjectId,
     ref: 'user',
     required: true,
     select: false,
   },
   movieId: { // id фильма, который содержится в ответе сервиса MoviesExplorer
     type: Number,
-    unique: true,
+    required: true,
   },
   nameRU: { // название фильма на русском языке
     type: String,

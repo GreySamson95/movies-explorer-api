@@ -1,13 +1,11 @@
 const Movie = require('../models/movie');
 const BadRequestError = require('../errors/BadRequest');
-// const NotFoundError = require('../errors/NotFound');
+const NotFoundError = require('../errors/NotFound');
 const ForbiddenError = require('../errors/Forbidden');
 
 const returnMovies = (req, res, next) => { // возвращает все сохранённые пользователем фильмы
   const owner = req.user._id; // ID пользователя, отправляющий запрос
   Movie.find({ owner })
-    .populate('user')
-    .orFail()
     .then((movies) => {
       res.send(movies);
     })
@@ -43,9 +41,24 @@ const createMovie = (req, res, next) => { // создаёт фильм с пер
     movieId,
     owner,
   })
-    .then((newMovie) => res.send(newMovie))
-    .catch(() => {
-      throw new BadRequestError('Не получилось добавить фильм, введены некорректные данные.');
+    .then(() => res.send({
+      country,
+      director,
+      duration,
+      year,
+      description,
+      image,
+      trailer,
+      nameRU,
+      nameEN,
+      thumbnail,
+      movieId,
+    }))
+    .catch((err) => {
+      if (err.name === 'CastError' || err.name === 'ValidationError') {
+        throw new BadRequestError('Не получилось добавить фильм, введены некорректные данные.');
+      }
+      next(err);
     })
     .catch(next);
 };
@@ -53,19 +66,29 @@ const createMovie = (req, res, next) => { // создаёт фильм с пер
 const deleteMovie = (req, res, next) => { // удаляет сохранённый фильм по _id
   const requestedMovieId = req.params.id; // ID фильма, который нужно удалить
   const userId = req.user._id; // ID пользователя, отправляющий запрос
-  Movie.findById(requestedMovieId)
+  Movie.findByIdAndRemove(requestedMovieId)
+    .select('+owner')
     .then((requestedMovie) => {
+      if (!requestedMovie) {
+        throw new NotFoundError('Не получилось найти фильм по id');
+      }
       // Если пользователь, отправляющий запрос владелец фильма,
       // то фильм можно удалить:
-      if (requestedMovie.owner.toString() === userId) {
-        requestedMovie.remove() // Удаляем фильм
-          .then(() => res.send({ message: `Фильм «${requestedMovie.nameRU}» успешно удалён из коллекции сохранённых.` }))
-          .catch(next);
-      } else {
+      if (requestedMovie.owner.toString() !== userId) {
         throw new ForbiddenError('Вы не можете удалять чужие фильмы.');
       }
+      res.status(200).send({
+        message: `Фильм «${requestedMovie.nameRU}»
+      успешно удалён из коллекции сохранённых.`,
+      });
     })
-    .catch((err) => next(err));
+    .catch((err) => {
+      if (err.name === 'CastError') {
+        throw new BadRequestError('Не получилось удалить фильм, введены некорректные данные.');
+      }
+      next(err);
+    })
+    .catch(next);
 };
 
 module.exports = {

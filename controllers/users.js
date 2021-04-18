@@ -24,7 +24,7 @@ const createUser = (req, res, next) => {
       });
     })
     .catch((err) => {
-      if (err.name === 'MongoError' || err.code === 11000) {
+      if (err.name === 'MongoError' && err.code === 11000) {
         // Если уже используется
         throw new ConflictError('Данный email уже зарегистрирован.');
       } else next(err);
