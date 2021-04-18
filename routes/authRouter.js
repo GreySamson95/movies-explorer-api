@@ -17,7 +17,8 @@ authRouter.post('/signup', celebrate({ // Регистрация пользов�
   body: Joi.object().keys({
     name: Joi
       .string()
-      .required(),
+      .required()
+      .min(2).max(30),
     email: Joi
       .string()
       .required()

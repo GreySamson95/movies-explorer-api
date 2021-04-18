@@ -4,11 +4,14 @@ require('dotenv').config();
 const helmet = require('helmet');
 const bodyParser = require('body-parser');
 const cors = require('cors');
-const rateLimit = require('express-rate-limit');
 const cookieParser = require('cookie-parser');
 const mongoose = require('mongoose');
-// const { errors } = require('celebrate');
+const { errors } = require('celebrate');
+const limiter = require('./utils/rateLimits');
 const { requestLogger, errorLogger } = require('./middlewares/logger');
+// const celebrateErrorHandler = require('./middlewares/celebrateErrorHandler');
+const errorHandler = require('./middlewares/errorHandler');
+const mainRouter = require('./routes/index');
 /* ----------------------------------- */
 
 /* ------- порт и express ------------ */
@@ -17,13 +20,6 @@ const {
   MONGO = 'mongodb://localhost:27017/movie-explorer',
 } = process.env;
 const app = express();
-/* ----------------------------------- */
-
-/* --------- rate limiter ------------ */
-const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // limit each IP to 100 requests per windowMs
-});
 /* ----------------------------------- */
 
 /* --------  база данных ------------- */
@@ -55,30 +51,30 @@ const corsOptions = {
 /* --------------------------------- */
 
 /* ----------- милдверы ------------ */
-app.use(cors(corsOptions)); // CORS
-app.use(helmet());
+
+app.use(requestLogger); // Логгер
 app.use(limiter);
+app.use(helmet());
+app.use(cors(corsOptions)); // CORS
 app.use(cookieParser());
 app.use(bodyParser.urlencoded({
   extended: true,
 }));
 app.use(bodyParser.json());
-app.use(requestLogger); // Логгер
+
 /* --------------------------------- */
 
 /* ----------- роутинг ------------ */
-const mainRouter = require('./routes/index');
 
 app.use('/', mainRouter);
+
 /* --------------------------------- */
 
 /* - логгирование и обработка ошибок - */
-const celebrateErrorHandler = require('./middlewares/celebrateErrorHandler');// кастом JOI / Celebrate
-const errorHandler = require('./middlewares/errorHandler');
 
-app.use(celebrateErrorHandler);
+// app.use(celebrateErrorHandler);
 app.use(errorHandler);
-// app.use(errors()); // JOI / Celebrate
+app.use(errors()); // JOI / Celebrate
 // app.use((err, req, res, next) => {
 //   console.log(err);
 //   const { statusCode = 500, message } = err;

@@ -1,14 +1,13 @@
 const Movie = require('../models/movie');
 const BadRequestError = require('../errors/BadRequest');
-const NotFoundError = require('../errors/NotFound');
+// const NotFoundError = require('../errors/NotFound');
 const ForbiddenError = require('../errors/Forbidden');
 
 const returnMovies = (req, res, next) => { // возвращает все сохранённые пользователем фильмы
   const owner = req.user._id; // ID пользователя, отправляющий запрос
   Movie.find({ owner })
-    .orFail(() => {
-      throw new NotFoundError('Сохранённые фильмы не найдены.');
-    })
+    .populate('user')
+    .orFail()
     .then((movies) => {
       res.send(movies);
     })
@@ -66,8 +65,7 @@ const deleteMovie = (req, res, next) => { // удаляет сохранённы
         throw new ForbiddenError('Вы не можете удалять чужие фильмы.');
       }
     })
-    .catch(() => { throw new NotFoundError('Не получилось найти нужный фильм, проверьте id фильма.'); })
-    .catch(next);
+    .catch((err) => next(err));
 };
 
 module.exports = {

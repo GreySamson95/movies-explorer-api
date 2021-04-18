@@ -24,12 +24,10 @@ const createUser = (req, res, next) => {
       });
     })
     .catch((err) => {
-      if (err.name === 'MongoError') {
+      if (err.name === 'MongoError' || err.code === 11000) {
         // Если уже используется
         throw new ConflictError('Данный email уже зарегистрирован.');
-      } else {
-        throw new BadRequestError('Не получилось зарегистрировать пользователя, введены некорректные данные. ');
-      }
+      } else next(err);
     })
     .catch(next);
 };
@@ -40,11 +38,11 @@ const login = (req, res, next) => {
   const { email, password } = req.body;
   return User.findUserByCredentials(email, password)
     .then((user) => {
+      if (!user) {
+        throw new UnauthorizedError('Неверный пароль или email');
+      }
       const token = jwt.sign({ _id: user._id }, NODE_ENV === 'production' ? JWT_SECRET : 'secret', { expiresIn: '7d' });
       res.status(200).send({ token });
-    })
-    .catch(() => {
-      throw new UnauthorizedError('Неверный пароль или email');
     })
     .catch(next);
 };
