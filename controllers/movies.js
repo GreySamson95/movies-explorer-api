@@ -78,8 +78,7 @@ const deleteMovie = (req, res, next) => { // удаляет сохранённы
         throw new ForbiddenError('Вы не можете удалять чужие фильмы.');
       }
       res.status(200).send({
-        message: `Фильм «${requestedMovie.nameRU}»
-      успешно удалён из коллекции сохранённых.`,
+        message: `Фильм «${requestedMovie.nameRU}» успешно удалён из коллекции сохранённых.`,
       });
     })
     .catch((err) => {

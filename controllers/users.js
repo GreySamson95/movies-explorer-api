@@ -3,7 +3,6 @@ const jwt = require('jsonwebtoken');
 const User = require('../models/user.js');
 const BadRequestError = require('../errors/BadRequest');
 const ConflictError = require('../errors/Conflict');
-const UnauthorizedError = require('../errors/Unauthorized');
 
 const { NODE_ENV, JWT_SECRET } = process.env;
 
@@ -38,9 +37,6 @@ const login = (req, res, next) => {
   const { email, password } = req.body;
   return User.findUserByCredentials(email, password)
     .then((user) => {
-      if (!user) {
-        throw new UnauthorizedError('Неверный пароль или email');
-      }
       const token = jwt.sign({ _id: user._id }, NODE_ENV === 'production' ? JWT_SECRET : 'secret', { expiresIn: '7d' });
       res.status(200).send({ token });
     })

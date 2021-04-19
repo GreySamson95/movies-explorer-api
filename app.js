@@ -75,19 +75,8 @@ app.use('/', mainRouter);
 // app.use(celebrateErrorHandler);
 app.use(errors()); // JOI / Celebrate
 app.use(errorHandler);
-// app.use((err, req, res, next) => {
-//   console.log(err);
-//   const { statusCode = 500, message } = err;
-//   res
-//     .status(statusCode)
-//     .send({
-//       message: statusCode === 500
-//         ? 'На сервере произошла ошибка'
-//         : message,
-//     });
-//   next();
-// });
 app.use(errorLogger); // Логгер
+
 /* --------------------------------- */
 
 /* ----------- run app ------------ */
