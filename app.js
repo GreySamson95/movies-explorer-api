@@ -6,10 +6,10 @@ const bodyParser = require('body-parser');
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
 const mongoose = require('mongoose');
-// const { errors } = require('celebrate');
+const { errors } = require('celebrate');
 const limiter = require('./utils/rateLimits');
 const { requestLogger, errorLogger } = require('./middlewares/logger');
-const celebrateErrorHandler = require('./middlewares/celebrateErrorHandler');
+// const celebrateErrorHandler = require('./middlewares/celebrateErrorHandler');
 const errorHandler = require('./middlewares/errorHandler');
 const mainRouter = require('./routes/index');
 /* ----------------------------------- */
@@ -72,8 +72,8 @@ app.use('/', mainRouter);
 
 /* - логгирование и обработка ошибок - */
 
-app.use(celebrateErrorHandler);
-// app.use(errors()); // JOI / Celebrate
+// app.use(celebrateErrorHandler);
+app.use(errors()); // JOI / Celebrate
 app.use(errorHandler);
 app.use(errorLogger); // Логгер
 
