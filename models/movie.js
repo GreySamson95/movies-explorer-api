@@ -29,14 +29,8 @@ const movieSchema = new mongoose.Schema({
     required: true,
   },
   image: { // ссылка на постер к фильму [URL]
-    type: String,
+    type: Object,
     required: true,
-    validate: {
-      validator(url) {
-        return regex.test(url);
-      },
-      message: 'Введите корректный URL',
-    },
   },
   trailer: { // ссылка на трейлер фильма [URL]
     type: String,
@@ -64,9 +58,10 @@ const movieSchema = new mongoose.Schema({
     required: true,
     select: false,
   },
-  movieId: { // id фильма, который содержится в ответе сервиса MoviesExplorer
+  id: { // id фильма, который содержится в ответе сервиса MoviesExplorer
     type: Number,
     required: true,
+    unique: true,
   },
   nameRU: { // название фильма на русском языке
     type: String,

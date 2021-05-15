@@ -24,7 +24,7 @@ const createMovie = (req, res, next) => { // создаёт фильм с пер
     nameRU,
     nameEN,
     thumbnail,
-    movieId,
+    id,
   } = req.body; // переданные данные
   const owner = req.user._id; // ID пользователя, отправляющий запрос
   Movie.create({
@@ -38,22 +38,11 @@ const createMovie = (req, res, next) => { // создаёт фильм с пер
     nameRU,
     nameEN,
     thumbnail,
-    movieId,
     owner,
+    id,
   })
-    .then(() => res.send({
-      country,
-      director,
-      duration,
-      year,
-      description,
-      image,
-      trailer,
-      nameRU,
-      nameEN,
-      thumbnail,
-      movieId,
-    }))
+    .then((newMovie) => res
+      .send(newMovie))
     .catch((err) => {
       if (err.name === 'CastError' || err.name === 'ValidationError') {
         throw new BadRequestError('Не получилось добавить фильм, введены некорректные данные.');

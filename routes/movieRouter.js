@@ -24,19 +24,14 @@ movieRouter.post('/', celebrate({
       .string()
       .required(),
     image: Joi // ссылка на постер к фильму. Обязательное поле-строка. [URL]
-      .string()
-      .pattern(regex)
+      .object()
       .required(),
     trailer: Joi // ссылка на трейлер фильма. Обязательное поле-строка. [URL]
       .string()
-      .pattern(regex)
-      .required(),
+      .pattern(regex),
     thumbnail: Joi // миниатюрное изображение постера к фильму. Обязательное поле-строка. [URL]
       .string()
       .pattern(regex)
-      .required(),
-    movieId: Joi
-      .number()
       .required(),
     nameRU: Joi // название фильма на русском языке. Обязательное поле-строка.
       .string()
