@@ -44,10 +44,10 @@ const createMovie = (req, res, next) => { // создаёт фильм с пер
     .then((newMovie) => res
       .send(newMovie))
     .catch((err) => {
+      // eslint-disable-next-line no-console
       if (err.name === 'CastError' || err.name === 'ValidationError') {
         throw new BadRequestError('Не получилось добавить фильм, введены некорректные данные.');
       }
-      next(err);
     })
     .catch(next);
 };

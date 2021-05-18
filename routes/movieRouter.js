@@ -33,6 +33,9 @@ movieRouter.post('/', celebrate({
       .string()
       .pattern(regex)
       .required(),
+    id: Joi // id фильма, который содержится в ответе сервиса MoviesExplorer
+      .number()
+      .required(),
     nameRU: Joi // название фильма на русском языке. Обязательное поле-строка.
       .string()
       .required(),
